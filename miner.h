@@ -82,15 +82,16 @@ class Miner
             int sstop=0;
             int tn;
             Block mined = Block(block->serialize());
-            Block mined_private = mined;
-            std::cout<<mined_private.toString()<<std::endl;
+            
+            
             mined.nonce = 0;
             std::string hash = this->calculateHash(&mined);
             std::string hash_private = hash;
             omp_set_num_threads(8);
-            #pragma omp parallel private(tn, hash_private, mined_private)
+            #pragma omp parallel private(tn, hash_private)
             {
-                
+                Block mined_private = Block(block->serialize());
+                std::cout<<mined_private.toString()<<std::endl;
                 tn=omp_get_thread_num();
                 printf("Thread %d, sstop=%d\n",tn,sstop);
                 while(!sstop && !this->verify(hash)) {
