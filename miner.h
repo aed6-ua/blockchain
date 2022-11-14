@@ -80,44 +80,27 @@ class Miner
         {
             // create a copy of the block
             int sstop=0;
-            int tn;
             Block mined = Block(block->serialize());
-            
-            
             mined.nonce = 0;
             std::string hash = this->calculateHash(&mined);
             std::string hash_private = hash;
-            omp_set_num_threads(8);
-            #pragma omp parallel private(tn, hash_private)
+            #pragma omp parallel private(hash_private)
             {
                 Block mined_private = Block(block->serialize());
-                std::cout<<mined_private.toString()<<std::endl;
-                tn=omp_get_thread_num();
-                printf("Thread %d, sstop=%d\n",tn,sstop);
                 while(!sstop && !this->verify(hash)) {
                     #pragma omp critical
                     {
                         mined.nonce++;
                         mined_private.nonce=mined.nonce;
                     }
-                    
-                    if (mined_private.nonce==3042240){
-                        std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
-                        std::cout<<mined_private.toString()<<std::endl;
-                        mined_private.timestamp=0;
-                        std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
-                    }
                     hash_private = this->calculateHash(&mined_private);
                     if (this->verify(hash_private)) {
                         sstop=1;
                         hash = hash_private;
-                        printf("Thread %d, sstop=%d\n",tn,sstop);
+                        mined.nonce = mined_private.nonce;
                     }
                 };
-                
-
             }
-            
             // update block with mined hash
             block->nonce = mined.nonce;
             block->hash = hash;
@@ -143,12 +126,7 @@ class Miner
             
             std::stringstream ss;
             ss<<block->index<<block->timestamp<<block->previousHash<<block->nonce;
-            std::string hash=sha256(ss.str());
-            if (block->nonce==3042240) {
-                std::cout<<block->toString()<<std::endl;
-                std::cout<<hash<<std::endl;
-            }
-            return hash;
+            return sha256(ss.str());
         }
 };
 
