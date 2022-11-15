@@ -83,11 +83,12 @@ class Miner
             Block mined = Block(block->serialize());
             mined.nonce = 0;
             std::string hash = this->calculateHash(&mined);
-            std::string hash_private = hash;
-            #pragma omp parallel private(hash_private)
+            //omp_set_num_threads(32);
+            #pragma omp parallel
             {
+                std::string hash_private;
                 Block mined_private = Block(block->serialize());
-                while(!sstop && !this->verify(hash)) {
+                while(!sstop) {
                     #pragma omp critical
                     {
                         mined.nonce++;
