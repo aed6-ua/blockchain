@@ -16,7 +16,7 @@ int main()
     Block block = Block(0, 0, "");
     std::cout<<"Mining..."<<std::endl;
     Miner miner = Miner(MINE_DIFFICULTY);
-    miner.parallel_mine(&block);
+    miner.mine(&block);
     struct timeval end;
     gettimeofday(&end, NULL);
     std::cout<<block.toString()<<std::endl;

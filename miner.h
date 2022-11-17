@@ -56,7 +56,7 @@ class Miner
                 ss<<'0';
             this->zeros = ss.str();
         }
-        
+        /*
         Block* mine(Block* block) const
         {
             // create a copy of the block
@@ -75,14 +75,15 @@ class Miner
             
             return block;
         }
-        
-        Block* parallel_mine(Block* block) const
+        */
+        Block* mine(Block* block) const
         {
             // create a copy of the block
             int sstop=0;
             Block mined = Block(block->serialize());
             mined.nonce = 0;
             std::string hash = this->calculateHash(&mined);
+            int nonce_ganador;
             //omp_set_num_threads(32);
             #pragma omp parallel
             {
@@ -98,12 +99,12 @@ class Miner
                     if (this->verify(hash_private)) {
                         sstop=1;
                         hash = hash_private;
-                        mined.nonce = mined_private.nonce;
+                        nonce_ganador = mined_private.nonce;
                     }
                 };
             }
             // update block with mined hash
-            block->nonce = mined.nonce;
+            block->nonce = nonce_ganador;
             block->hash = hash;
             
             return block;
